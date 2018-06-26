@@ -1,40 +1,80 @@
 import Vue from 'vue'
-Vue.directive('dialogdrag',function (el,binding) {
-  let eles = el.querySelectorAll('.el-dialog__header');
-  var target = null;
-  var left = 0;
-  var top = 0;
-  function moveFn($event){
-    target.style.marginLeft =$event.clientX - left +'px';
-    target.style.marginTop = $event.clientY - top +'px';
-  }
-  eles.forEach((ele)=>{
-    ele.addEventListener('mousedown',function($event){
-      //记录margin-left、margin-top;
-      target = $event.currentTarget.parentNode;//currentTarget与target
-      target.style.cursor="move";
-      left = $event.clientX - parseFloat(window.getComputedStyle(target).marginLeft);
-      top = $event.clientY - parseFloat(window.getComputedStyle(target).marginTop);
+let LEFT;
+let TOP;
 
+Vue.directive('dialogdrag',{
+  inserted(el,binding){
+    let container = el.querySelector(binding.value.container);
+    let target = el.querySelector(binding.value.target);
+
+
+    let temContainerWidth = getComputedStyle(container).width;
+    let temHtmlWidth = getComputedStyle(document.firstElementChild).width;
+    if(temContainerWidth.indexOf('%') != -1){
+      //百分值
+      LEFT = (
+        parseFloat(temHtmlWidth) -
+        parseFloat(temHtmlWidth) * temContainerWidth.substring(0,temContainerWidth.length-1)/100
+      )/2;
+    }else if(temContainerWidth.indexOf('px') != -1){
+      //像素值
+      LEFT = (
+        parseFloat(temHtmlWidth) -
+        parseFloat(temContainerWidth)
+      )/2;
+    }else{
+      //其他值
+      throw ('对话框容器宽度只能为像素或百分比！')
+    }
+    console.log(temContainerWidth);
+    console.log(temHtmlWidth);
+    //
+    let temMarginTop = getComputedStyle(container).marginTop;
+    if(temMarginTop && temMarginTop.indexOf('px') != -1){
+      //不为空并且以像素为单位
+      TOP = parseFloat(temMarginTop);
+    }else{
+      throw ('请设置对话框容器上边距margin-top并以像素为单位！')
+    }
+    console.log(LEFT)
+    //删除对话容器的行内样式（marginleft,margintop,marginbottom,marginrigth）;
+    delete container.style.marginTop;
+    delete container.style.marginLeft;
+    delete container.style.marginRight;
+    delete container.style.marginBottom;
+    delete container.style.margin;
+    //赋值给marginTop;marginLeft;
+    container.style.marginTop = TOP+'px';
+    container.style.marginLeft = LEFT+'px';
+
+    //事件监听
+    target.addEventListener('mousedown',function(event){
+      //获取鼠标距离对话框容器的左上边距
+      let leftValue = event.clientX - parseFloat(getComputedStyle(container).marginLeft);
+      let topValue = event.clientY - parseFloat(getComputedStyle(container).marginTop);
       document.addEventListener('mousemove',moveFn,true)
-      document.addEventListener('mouseup',function($event){
-        target.style.cursor="default";
-        //取消move事件；
-        document.removeEventListener('mousemove',moveFn,true)
-      },true)
-    },true);
-  });
+      document.addEventListener('mouseup',upFn,true)
+      function moveFn(event){
+        console.log('还在移动')
+        target.style.cursor = 'move';
+        container.style.marginLeft = (event.clientX-leftValue)+'px';
+        container.style.marginTop = (event.clientY-topValue)+'px';
 
+      }
+      function upFn(event){
+        target.style.cursor = 'default';
+        document.removeEventListener('mousemove',moveFn,true);
+        //document.removeEventListener('mouseup',upFn);
+      }
+    })
+  },
+  componentUpdated(el,binding){
+    if(binding.value.dialogVisible){
+      //打开时还原对话框位置
+      el.querySelector(binding.value.container).style.marginTop = TOP+'px';
 
-  if(binding.value && binding.value.visible == true){
-    //绑定了值并且对话框状态为打开时
-    //重置对话框的位置为默认
-    let dialog = el.querySelector('.el-dialog');
-    //获取宽度、marginTop
-    var width = dialog.style.width;
-    dialog.removeAttribute('style');
-    //重新赋值
-    dialog.style.width = width;
-    dialog.style.marginTop = '15vh';
+      el.querySelector(binding.value.container).style.marginLeft = LEFT+'px';
+
+    }
   }
 })
