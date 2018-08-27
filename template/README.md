@@ -1,6 +1,6 @@
-# lightvue
+# 更加方便的vue模板
 
-> A Vue.js project
+> A Vue.js project，结合vue-cli集成了vue-router,axios,elementUI等
 
 ## Build Setup
 
