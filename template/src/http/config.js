@@ -4,12 +4,19 @@ let service = axios.create({
   //headers:{ 'Access-Control-Allow-Origin': '*' }, //自定义请求头
   //method:'get',//默认是get
   //设置baseUR，便于传递相对 URL，在main.js里配置。
-  // transformRequest:[function(data){
-  //   //对data进行任意转换处理
-  //   //此处打印数据-请求体
-  //   //console.log('发送的数据',data)
-  //   return JSON.stringify(data);
-  // }],
+  transformRequest:[function(data){
+    //对data进行任意转换处理
+    function toFormData(data){
+      let resData = "";
+      for(let name in data){
+        resData += encodeURIComponent(name)+"="+encodeURIComponent(data[name])+"&"
+      }
+      //去除后面多余的&
+      return resData.substring(0,resData.length-1);
+    }
+    return toFormData(data)
+    // return JSON.stringify(data);
+  }],
   // params: {
   //   ID: '何泽兵'
   // },//与请求一起发送的 URL 参数
@@ -22,6 +29,7 @@ let service = axios.create({
     //console.log('接收的数据',data)
 
     //由于mockjs 返回的json字符串，此处需要解析
+
     return JSON.parse(data);
   }],
   responseType: 'application/json',//默认是json

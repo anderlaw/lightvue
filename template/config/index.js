@@ -9,8 +9,16 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
-    httpBaseURL:'"http://dev/com"',
+    proxyTable: {
+      '/': {
+        target: 'http://172.190.16.77:81',//调用的接口域名和端口号
+        changeOrigin: true,
+        pathRewrite: {
+          //'^/api': ''//
+        }
+      }
+    },
+    httpBaseURL:'""',//如果使用 代理跨域需要设置为空
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST
     port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined

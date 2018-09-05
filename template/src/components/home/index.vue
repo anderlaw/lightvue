@@ -10,10 +10,10 @@
   </div>
 </template>
 <script>
-import { getUser } from '@/http/user'
+import { testHttp } from '@/http/test'
 export default {
   mounted() {
-    getUser();
+    testHttp();
   }
 }
 </script>
